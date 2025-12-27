@@ -1,10 +1,18 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { GraphLinksLayer } from './GraphLinksLayer';
 
 export interface UniverseNode {
   id: string;
   label: string;
   x: number;
   y: number;
+}
+
+export interface UniverseEdge {
+  id: string;
+  sourceId: string;
+  targetId: string;
+  strength?: number;
 }
 
 export interface UniverseView {
@@ -15,6 +23,7 @@ export interface UniverseView {
 
 interface UniverseCanvasProps {
   nodes: UniverseNode[];
+  edges: UniverseEdge[];
   view: UniverseView;
   setView: React.Dispatch<React.SetStateAction<UniverseView>>;
   onMoveNode: (id: string, delta: { dx: number; dy: number }) => void;
@@ -22,16 +31,26 @@ interface UniverseCanvasProps {
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
-export const UniverseCanvas: React.FC<UniverseCanvasProps> = ({ nodes, view, setView, onMoveNode }) => {
+export const UniverseCanvas: React.FC<UniverseCanvasProps> = ({ nodes, edges, view, setView, onMoveNode }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const isPanningRef = useRef(false);
+  const [isPanning, setIsPanning] = useState(false);
   const draggingNodeIdRef = useRef<string | null>(null);
   const lastPointerRef = useRef<{ x: number; y: number } | null>(null);
   const viewRef = useRef(view);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     viewRef.current = view;
   }, [view]);
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
@@ -48,16 +67,20 @@ export const UniverseCanvas: React.FC<UniverseCanvasProps> = ({ nodes, view, set
       }
 
       if (isPanningRef.current) {
-        setView((prev) => ({
-          ...prev,
-          offsetX: prev.offsetX + deltaX,
-          offsetY: prev.offsetY + deltaY,
-        }));
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        rafRef.current = requestAnimationFrame(() => {
+          setView((prev) => ({
+            ...prev,
+            offsetX: prev.offsetX + deltaX,
+            offsetY: prev.offsetY + deltaY,
+          }));
+        });
       }
     };
 
     const handleMouseUp = () => {
       isPanningRef.current = false;
+      setIsPanning(false);
       draggingNodeIdRef.current = null;
       lastPointerRef.current = null;
     };
@@ -74,6 +97,7 @@ export const UniverseCanvas: React.FC<UniverseCanvasProps> = ({ nodes, view, set
   const handleMouseDownBackground: React.MouseEventHandler<HTMLDivElement> = (event) => {
     if (event.button !== 0) return;
     isPanningRef.current = true;
+    setIsPanning(true);
     lastPointerRef.current = { x: event.clientX, y: event.clientY };
   };
 
@@ -96,7 +120,8 @@ export const UniverseCanvas: React.FC<UniverseCanvasProps> = ({ nodes, view, set
     const centerY = rect.height / 2;
 
     setView((prev) => {
-      const nextScale = clamp(prev.scale * (1 - event.deltaY * 0.0012), 0.6, 2.2);
+      const scaleFactor = 1 - event.deltaY * 0.0012;
+      const nextScale = clamp(prev.scale * scaleFactor, 0.5, 2.8);
       const currentScale = prev.scale;
 
       const worldX = (cursorX - centerX - prev.offsetX) / currentScale;
@@ -114,7 +139,15 @@ export const UniverseCanvas: React.FC<UniverseCanvasProps> = ({ nodes, view, set
       ref={containerRef}
       onMouseDown={handleMouseDownBackground}
       onWheel={handleWheel}
-      className="cosmic-surface relative isolate min-h-[70vh] w-full select-none overflow-hidden rounded-3xl border border-[rgba(255,255,255,0.04)] bg-[rgba(12,19,34,0.82)] shadow-[0_30px_120px_rgba(0,0,0,0.45)]"
+      onMouseLeave={() => {
+        isPanningRef.current = false;
+        draggingNodeIdRef.current = null;
+        lastPointerRef.current = null;
+        setIsPanning(false);
+      }}
+      className={`cosmic-surface relative isolate h-full w-full select-none overflow-hidden bg-[rgba(12,19,34,0.9)] shadow-[0_30px_120px_rgba(0,0,0,0.45)] touch-none ${
+        isPanning ? 'cursor-grabbing' : 'cursor-grab'
+      }`}
     >
       <div className="cosmic-stars pointer-events-none absolute inset-0" aria-hidden />
 
@@ -124,11 +157,17 @@ export const UniverseCanvas: React.FC<UniverseCanvasProps> = ({ nodes, view, set
           transform: `translate(${view.offsetX}px, ${view.offsetY}px) scale(${view.scale})`,
         }}
       >
+        <div className="pointer-events-none relative">
+          <div className="absolute inset-0">
+            <GraphLinksLayer nodes={nodes} edges={edges} />
+          </div>
+        </div>
+
         {nodes.map((node) => (
           <div
             key={node.id}
             onMouseDown={handleNodeMouseDown(node.id)}
-            className="universe-node absolute flex cursor-grab flex-col items-center gap-2 rounded-full p-2 text-center text-sm font-semibold text-white"
+            className="universe-node absolute flex cursor-grab flex-col items-center gap-2 rounded-full p-2 text-center text-sm font-semibold text-white transition active:cursor-grabbing"
             style={{ transform: `translate(${node.x}px, ${node.y}px)` }}
           >
             <div className="node-planet grid h-16 w-16 place-items-center rounded-full shadow-[0_15px_40px_rgba(111,135,255,0.38)] transition duration-150 hover:scale-[1.04]">
