@@ -204,7 +204,7 @@ export const UniverseScreen: React.FC<UniverseScreenProps> = ({ onBack }) => {
     } catch {
       setRecommendations([]);
       setQueries([]);
-      setError('Не удалось подобрать контент. Попробуйте ещё раз.');
+      setError('Ошибка подбора контента. Попробуйте позже.');
     } finally {
       setIsLoading(false);
     }
@@ -216,8 +216,11 @@ export const UniverseScreen: React.FC<UniverseScreenProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="fixed inset-0 isolate overflow-hidden bg-[radial-gradient(60%_60%_at_20%_80%,rgba(113,66,192,0.25),transparent),radial-gradient(45%_45%_at_85%_20%,rgba(58,112,196,0.26),transparent),linear-gradient(180deg,#0d172b_0%,#0c1528_40%,#0c1628_100%)]">
-      <div className="cosmic-fog pointer-events-none absolute inset-0" aria-hidden />
+    <div className="fixed inset-0 isolate overflow-hidden bg-[linear-gradient(180deg,#050a16_0%,#0a1230_45%,#080f22_100%)]">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="cosmic-stars absolute inset-0" aria-hidden />
+        <div className="cosmic-fog absolute inset-0" aria-hidden />
+      </div>
 
       <div className="absolute inset-0">
         <UniverseCanvas nodes={nodes} edges={edges} view={view} setView={setView} onMoveNode={moveNode} />
@@ -232,11 +235,16 @@ export const UniverseScreen: React.FC<UniverseScreenProps> = ({ onBack }) => {
           </div>
         ) : null}
 
-        <header className="pointer-events-auto mx-auto mt-4 w-[calc(100%-24px)] max-w-[1200px] rounded-3xl border border-[rgba(255,255,255,0.05)] bg-[rgba(11,18,31,0.78)] px-4 py-3 shadow-[0_12px_50px_rgba(0,0,0,0.35)] backdrop-blur sm:px-6">
+        <header className="pointer-events-auto mx-auto mt-4 w-[calc(100%-24px)] max-w-[1240px] rounded-3xl border border-[rgba(255,255,255,0.06)] bg-[rgba(8,12,22,0.78)] px-4 py-3 shadow-[0_16px_60px_rgba(0,0,0,0.45)] backdrop-blur sm:px-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <span className="rounded-2xl bg-[rgba(102,130,255,0.16)] px-3 py-2 text-sm font-semibold text-white">HORIZON</span>
-              <p className="hidden text-sm text-textSecondary sm:block">Твоя метавселенная интересов</p>
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+              <div className="flex items-center gap-2">
+                <span className="rounded-2xl bg-[rgba(102,130,255,0.18)] px-3 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(111,135,255,0.28)]">
+                  HORIZON
+                </span>
+                <p className="text-sm font-semibold text-white">— исследуй своё мышление</p>
+              </div>
+              <p className="text-xs text-[rgba(233,238,247,0.7)] sm:text-sm">Добавляй интересы, соединяй смыслы и расширяй карту идей</p>
             </div>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <button
@@ -250,8 +258,9 @@ export const UniverseScreen: React.FC<UniverseScreenProps> = ({ onBack }) => {
               <button
                 type="button"
                 onClick={() => setIsModalOpen(true)}
-                className="rounded-xl bg-gradient-to-r from-[#6f87ff] to-[#9f6bff] px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(115,133,255,0.35)] transition hover:brightness-105"
+                className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#6f87ff] to-[#9f6bff] px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(115,133,255,0.35)] transition hover:brightness-105"
               >
+                <span className="text-lg leading-none">＋</span>
                 Добавить интерес
               </button>
               <button
@@ -266,8 +275,8 @@ export const UniverseScreen: React.FC<UniverseScreenProps> = ({ onBack }) => {
         </header>
 
         <div className="pointer-events-none relative flex-1">
-          <div className="pointer-events-none absolute bottom-6 right-6 z-20 rounded-2xl bg-[rgba(10,16,28,0.78)] px-3.5 py-3 text-[13px] font-semibold leading-relaxed text-[rgba(233,238,247,0.9)] shadow-[0_10px_40px_rgba(0,0,0,0.35)] backdrop-blur sm:bottom-8 sm:right-8">
-            <p>Тяни — перемещение · Колесо — масштаб · Перетащи узел — поменяй карту</p>
+          <div className="pointer-events-none absolute bottom-6 right-6 z-20 rounded-2xl bg-[rgba(10,16,28,0.76)] px-3.5 py-3 text-[13px] font-semibold leading-relaxed text-[rgba(233,238,247,0.9)] shadow-[0_10px_40px_rgba(0,0,0,0.35)] backdrop-blur sm:bottom-8 sm:right-8">
+            <p>Тяни — перемещение · Колесо — масштаб · Перетащи узел — обнови связи</p>
           </div>
         </div>
       </div>

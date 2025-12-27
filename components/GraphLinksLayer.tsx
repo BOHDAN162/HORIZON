@@ -1,15 +1,16 @@
-import React, { useMemo } from 'react';
+import React, { useId, useMemo } from 'react';
 import type { UniverseEdge, UniverseNode } from './UniverseCanvas';
-
-const NODE_RADIUS = 32;
-const ARROW_PADDING = 6;
 
 interface GraphLinksLayerProps {
   nodes: UniverseNode[];
   edges: UniverseEdge[];
+  nodeRadius: number;
+  arrowPadding: number;
 }
 
-export const GraphLinksLayer: React.FC<GraphLinksLayerProps> = ({ nodes, edges }) => {
+export const GraphLinksLayer: React.FC<GraphLinksLayerProps> = ({ nodes, edges, nodeRadius, arrowPadding }) => {
+  const gradientId = useId();
+  const markerId = useId();
   const nodeById = useMemo(() => {
     const map = new Map<string, UniverseNode>();
     nodes.forEach((node) => map.set(node.id, node));
@@ -31,10 +32,10 @@ export const GraphLinksLayer: React.FC<GraphLinksLayerProps> = ({ nodes, edges }
         const ux = dx / distance;
         const uy = dy / distance;
 
-        const startX = source.x + ux * NODE_RADIUS;
-        const startY = source.y + uy * NODE_RADIUS;
-        const endX = target.x - ux * (NODE_RADIUS + ARROW_PADDING);
-        const endY = target.y - uy * (NODE_RADIUS + ARROW_PADDING);
+        const startX = source.x + ux * (nodeRadius + arrowPadding);
+        const startY = source.y + uy * (nodeRadius + arrowPadding);
+        const endX = target.x - ux * (nodeRadius + arrowPadding + 2);
+        const endY = target.y - uy * (nodeRadius + arrowPadding + 2);
 
         return {
           id: edge.id,
@@ -70,7 +71,7 @@ export const GraphLinksLayer: React.FC<GraphLinksLayerProps> = ({ nodes, edges }
       height: Math.max(maxY - minY, 1),
       edges: validEdges,
     };
-  }, [edges, nodeById]);
+  }, [arrowPadding, edges, nodeById, nodeRadius]);
 
   if (!geometry) return null;
 
@@ -79,20 +80,28 @@ export const GraphLinksLayer: React.FC<GraphLinksLayerProps> = ({ nodes, edges }
       className="pointer-events-none absolute left-0 top-0 overflow-visible"
       style={{
         transform: `translate(${geometry.minX}px, ${geometry.minY}px)`,
-        width: `${geometry.width}px`,
-        height: `${geometry.height}px`,
       }}
+      width={geometry.width}
+      height={geometry.height}
       viewBox={`0 0 ${geometry.width} ${geometry.height}`}
       aria-hidden
     >
       <defs>
-        <marker id="arrowhead" markerWidth="14" markerHeight="14" refX="9" refY="6" orient="auto" markerUnits="strokeWidth">
-          <path d="M0,0 L0,12 L12,6 z" fill="url(#linkGradient)" />
-        </marker>
-        <linearGradient id="linkGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#9f6bff" stopOpacity="0.6" />
-          <stop offset="100%" stopColor="#6f87ff" stopOpacity="0.6" />
+        <linearGradient id={`${gradientId}-link`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#a4b5ff" stopOpacity="0.65" />
+          <stop offset="100%" stopColor="#6f87ff" stopOpacity="0.55" />
         </linearGradient>
+        <marker
+          id={`${markerId}-arrow`}
+          markerWidth="10"
+          markerHeight="10"
+          refX="6"
+          refY="5"
+          orient="auto"
+          markerUnits="strokeWidth"
+        >
+          <path d="M1,1 L1,9 L9,5 z" fill={`url(#${gradientId}-link)`} />
+        </marker>
       </defs>
 
       {geometry.edges.map((edge) => (
@@ -102,11 +111,12 @@ export const GraphLinksLayer: React.FC<GraphLinksLayerProps> = ({ nodes, edges }
           y1={edge.startY - geometry.minY}
           x2={edge.endX - geometry.minX}
           y2={edge.endY - geometry.minY}
-          stroke="url(#linkGradient)"
-          strokeWidth={1.6}
-          strokeOpacity={0.5}
-          markerEnd="url(#arrowhead)"
-          className="drop-shadow-[0_0_12px_rgba(124,157,255,0.35)]"
+          stroke={`url(#${gradientId}-link)`}
+          strokeWidth={1.25}
+          strokeOpacity={0.6}
+          strokeLinecap="round"
+          markerEnd={`url(#${markerId}-arrow)`}
+          className="edge-line drop-shadow-[0_0_12px_rgba(124,157,255,0.35)]"
         />
       ))}
     </svg>

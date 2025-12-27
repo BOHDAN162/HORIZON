@@ -43,7 +43,7 @@ export const ContentDrawer: React.FC<ContentDrawerProps> = ({
 }) => {
   return (
     <div
-      className={`fixed inset-x-4 bottom-4 z-30 sm:inset-y-6 sm:right-6 sm:left-auto sm:w-[380px] ${
+      className={`fixed inset-x-4 bottom-4 z-30 sm:inset-y-6 sm:right-6 sm:left-auto sm:w-[400px] ${
         open ? 'pointer-events-auto' : 'pointer-events-none'
       }`}
       aria-hidden={!open}

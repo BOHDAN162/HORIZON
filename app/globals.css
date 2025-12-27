@@ -12,9 +12,7 @@
 
 body {
   margin: 0;
-  background: radial-gradient(60% 60% at 20% 80%, rgba(113, 66, 192, 0.35), transparent),
-    radial-gradient(45% 45% at 85% 20%, rgba(58, 112, 196, 0.4), transparent),
-    linear-gradient(180deg, #0d172b 0%, #0c1528 40%, #0c1628 100%);
+  background: linear-gradient(180deg, #050a16 0%, #0a1230 45%, #080f22 100%);
   color: #e9eef7;
   min-height: 100vh;
   font-feature-settings: 'liga' 1, 'kern' 1;
@@ -94,9 +92,9 @@ body {
 }
 
 .cosmic-surface {
-  background: radial-gradient(60% 60% at 25% 30%, rgba(111, 135, 255, 0.15), transparent),
-    radial-gradient(40% 40% at 70% 70%, rgba(159, 107, 255, 0.15), transparent),
-    linear-gradient(180deg, #0b1527 0%, #0b1425 45%, #0c1628 100%);
+  background: radial-gradient(50% 60% at 28% 30%, rgba(111, 135, 255, 0.16), transparent 55%),
+    radial-gradient(45% 55% at 70% 65%, rgba(159, 107, 255, 0.18), transparent 60%),
+    linear-gradient(180deg, #09152a 0%, #091328 45%, #081020 100%);
 }
 
 .cosmic-stars::before,
@@ -104,16 +102,19 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.6), transparent),
-    radial-gradient(1.5px 1.5px at 70% 60%, rgba(121, 176, 255, 0.7), transparent),
-    radial-gradient(1px 1px at 40% 80%, rgba(255, 255, 255, 0.6), transparent),
-    radial-gradient(2px 2px at 80% 40%, rgba(159, 107, 255, 0.65), transparent);
-  opacity: 0.75;
+  background-image: radial-gradient(1px 1px at 15% 25%, rgba(255, 255, 255, 0.65), transparent),
+    radial-gradient(1.5px 1.5px at 35% 70%, rgba(121, 176, 255, 0.85), transparent),
+    radial-gradient(1.2px 1.2px at 75% 20%, rgba(177, 138, 255, 0.8), transparent),
+    radial-gradient(1px 1px at 55% 45%, rgba(255, 255, 255, 0.65), transparent),
+    radial-gradient(1.4px 1.4px at 85% 80%, rgba(126, 167, 255, 0.78), transparent),
+    radial-gradient(1px 1px at 5% 60%, rgba(255, 255, 255, 0.6), transparent);
+  background-repeat: repeat;
+  opacity: 0.9;
 }
 
 .cosmic-stars::after {
-  filter: blur(1px);
-  opacity: 0.5;
+  filter: blur(1.5px);
+  opacity: 0.45;
 }
 
 .cosmic-fog::before,
@@ -121,42 +122,53 @@ body {
   content: '';
   position: absolute;
   border-radius: 9999px;
-  filter: blur(140px);
-  opacity: 0.45;
+  filter: blur(150px);
+  opacity: 0.42;
 }
 
 .cosmic-fog::before {
-  width: 520px;
-  height: 520px;
-  background: rgba(102, 130, 255, 0.28);
-  top: -140px;
+  width: 540px;
+  height: 540px;
+  background: rgba(102, 130, 255, 0.25);
+  top: -160px;
   right: -180px;
 }
 
 .cosmic-fog::after {
-  width: 620px;
-  height: 620px;
-  background: rgba(159, 107, 255, 0.25);
-  bottom: -200px;
-  left: -200px;
+  width: 660px;
+  height: 660px;
+  background: rgba(159, 107, 255, 0.22);
+  bottom: -220px;
+  left: -220px;
 }
 
-.node-planet {
-  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 40%),
-    linear-gradient(135deg, #7c9dff 0%, #9e73ff 100%);
-  box-shadow: 0 0 20px rgba(124, 157, 255, 0.4), inset 0 0 35px rgba(255, 255, 255, 0.08);
-  animation: node-pop 0.3s ease-out both;
+.planet-core {
+  box-shadow: 0 0 18px rgba(124, 157, 255, 0.35), inset 0 0 20px rgba(255, 255, 255, 0.08);
+  animation: node-pop 0.28s ease-out both;
 }
 
 @keyframes node-pop {
   from {
-    transform: scale(0.9);
+    transform: scale(0.85);
     opacity: 0;
   }
   to {
     transform: scale(1);
     opacity: 1;
   }
+}
+
+@keyframes edge-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.edge-line {
+  animation: edge-fade 0.25s ease-out both;
 }
 
 @keyframes screen-appear {
