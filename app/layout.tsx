@@ -5,8 +5,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin', 'cyrillic'], display: 'swap' });
 
 export const metadata: Metadata = {
-  title: 'Gorisont — исследуй своё мышление',
-  description: 'Главная страница Gorisont',
+  title: 'HORIZON — исследуй своё мышление',
+  description: 'Главная страница HORIZON',
 };
 
 export default function RootLayout({
