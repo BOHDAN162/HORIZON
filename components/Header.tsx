@@ -18,19 +18,13 @@ const BrainIcon = () => (
 
 export const Header: React.FC = () => {
   return (
-    <header className="mx-auto flex w-full max-w-[1240px] items-center justify-between px-6 pt-6 lg:px-8">
+    <header className="mx-auto flex w-full max-w-[1240px] items-center justify-start px-6 pt-6 lg:px-8">
       <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[rgba(99,130,255,0.18)]">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[rgba(99,130,255,0.18)]">
           <BrainIcon />
         </div>
-        <span className="text-lg font-semibold text-textPrimary">Gorisont</span>
+        <span className="text-base font-semibold leading-[1.1] text-textPrimary">HORIZON</span>
       </div>
-      <button
-        type="button"
-        className="hidden rounded-full bg-[rgba(255,255,255,0.08)] px-4 py-2 text-sm font-medium text-textPrimary backdrop-blur lg:inline-flex"
-      >
-        Спросить ChatGPT
-      </button>
     </header>
   );
 };
