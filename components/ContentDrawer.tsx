@@ -97,20 +97,16 @@ export const ContentDrawer: React.FC<ContentDrawerProps> = ({
           ) : null}
 
           {!loading && !error && items.length ? (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {items.map((item) => (
                 <button
                   key={item.videoId}
                   type="button"
                   onClick={() => onSelect(item.url)}
-                  className="group flex w-full items-start gap-3 rounded-xl border border-[rgba(255,255,255,0.04)] bg-[rgba(255,255,255,0.02)] px-3.5 py-3 text-left transition duration-200 hover:-translate-y-[1px] hover:border-[rgba(111,135,255,0.35)] hover:bg-[rgba(111,135,255,0.05)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7c9dff]/50"
+                  className="group flex w-full flex-col rounded-xl border border-[rgba(255,255,255,0.05)] bg-[rgba(255,255,255,0.02)] px-3.5 py-3 text-left transition duration-150 hover:-translate-y-[1px] hover:border-[rgba(111,135,255,0.35)] hover:bg-[rgba(111,135,255,0.07)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7c9dff]/60"
                 >
-                  <span className="mt-[6px] h-2.5 w-2.5 rounded-full bg-gradient-to-br from-[#7c9dff] to-[#9f6bff] shadow-[0_0_12px_rgba(124,157,255,0.7)] transition group-hover:scale-105" />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-[15px] font-semibold leading-tight text-white">{item.title}</p>
-                    <p className="text-xs font-medium text-[rgba(233,238,247,0.65)]">{item.channelTitle}</p>
-                  </div>
-                  <span className="text-xs font-semibold text-[rgba(233,238,247,0.55)] transition group-hover:text-white">↗</span>
+                  <p className="text-[15px] font-semibold leading-snug text-white group-hover:text-white">{item.title}</p>
+                  <p className="text-xs font-medium text-[rgba(233,238,247,0.7)]">{item.channelTitle}</p>
                 </button>
               ))}
             </div>
