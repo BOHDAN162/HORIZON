@@ -105,7 +105,7 @@ const requestAiEdges = async (interests: string[], maxEdgesPerNode: number): Pro
   return parseEdges(content, new Set(interests));
 };
 
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   let body: { interests?: unknown; maxEdgesPerNode?: unknown };
   try {
     body = await request.json();
