@@ -23,9 +23,13 @@ const TelegramIcon = () => (
   </svg>
 );
 
-export const LoginCard: React.FC = () => {
+interface LoginCardProps {
+  onEnter: () => void;
+}
+
+export const LoginCard: React.FC<LoginCardProps> = ({ onEnter }) => {
   const handleClick = () => {
-    console.log('Telegram login clicked');
+    onEnter();
   };
 
   return (
@@ -83,11 +87,11 @@ export const LoginCard: React.FC = () => {
         className="telegram-button mt-4 flex w-full items-center justify-center gap-3 rounded-2xl bg-telegramBlue px-5 py-2.5 text-base font-semibold text-white transition hover:brightness-105"
       >
         <TelegramIcon />
-        Войти через Telegram
+        Войти
       </button>
 
       <p className="mt-3 text-center text-[13px] font-medium leading-[20px] text-textSecondary">
-        Нажми синюю кнопку и разреши доступ в Telegram
+        Нажми синюю кнопку — и ты сразу попадёшь в метавселенную интересов
       </p>
 
       <div className="mt-4 flex items-center gap-3 text-[13px] font-semibold text-textSecondary">
