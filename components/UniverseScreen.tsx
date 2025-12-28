@@ -250,6 +250,49 @@ export const UniverseScreen: React.FC<UniverseScreenProps> = ({ onBack }) => {
   const allInterests = useMemo(() => nodes.map((node) => node.label).filter(Boolean), [nodes]);
   const activeProfile = useMemo(() => deriveProfile(allInterests), [allInterests]);
 
+  const fetchInterestSuggestions = useCallback(async () => {
+    const interests = allInterests;
+    if (!interests.length) {
+      setToast('Сначала добавьте интересы');
+      setInterestSuggestions([]);
+      return;
+    }
+
+    setInterestLoading(true);
+    setInterestError('');
+    try {
+      const response = await fetch('/api/recommend/interests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ interests, limit: 12 }),
+      });
+
+      if (!response.ok) {
+        throw new Error('request_failed');
+      }
+
+      const data: { items?: string[]; error?: string } = await response.json();
+      if (data.error) throw new Error(data.error);
+
+      const cleaned = (data.items ?? []).map(capitalizeLabel).filter(Boolean);
+      if (!cleaned.length) {
+        throw new Error('empty');
+      }
+      setInterestSuggestions(cleaned);
+    } catch {
+      const fallback = buildLocalSuggestions(interests, activeProfile);
+      setInterestSuggestions(fallback);
+      if (!fallback.length) {
+        setInterestError('Не удалось получить рекомендации');
+      } else {
+        setInterestError('');
+        setToast('Показаны локальные рекомендации');
+      }
+    } finally {
+      setInterestLoading(false);
+    }
+  }, [activeProfile, allInterests]);
+
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -398,49 +441,6 @@ export const UniverseScreen: React.FC<UniverseScreenProps> = ({ onBack }) => {
     setIsOnboardingOpen(false);
     persistOnboardingState(selectedInterests);
   };
-
-  const fetchInterestSuggestions = useCallback(async () => {
-    const interests = allInterests;
-    if (!interests.length) {
-      setToast('Сначала добавьте интересы');
-      setInterestSuggestions([]);
-      return;
-    }
-
-    setInterestLoading(true);
-    setInterestError('');
-    try {
-      const response = await fetch('/api/recommend/interests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ interests, limit: 12 }),
-      });
-
-      if (!response.ok) {
-        throw new Error('request_failed');
-      }
-
-      const data: { items?: string[]; error?: string } = await response.json();
-      if (data.error) throw new Error(data.error);
-
-      const cleaned = (data.items ?? []).map(capitalizeLabel).filter(Boolean);
-      if (!cleaned.length) {
-        throw new Error('empty');
-      }
-      setInterestSuggestions(cleaned);
-    } catch {
-      const fallback = buildLocalSuggestions(interests, activeProfile);
-      setInterestSuggestions(fallback);
-      if (!fallback.length) {
-        setInterestError('Не удалось получить рекомендации');
-      } else {
-        setInterestError('');
-        setToast('Показаны локальные рекомендации');
-      }
-    } finally {
-      setInterestLoading(false);
-    }
-  }, [activeProfile, allInterests]);
 
   const fetchRecommendations = async () => {
     if (isLoading) return;
