@@ -6,7 +6,7 @@ export type ViewportState = {
   scale: number;
 };
 
-const ZOOM_SPEED = 0.0022;
+const ZOOM_SPEED = 0.001;
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 2.8;
 
