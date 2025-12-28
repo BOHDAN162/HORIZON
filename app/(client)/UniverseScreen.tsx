@@ -6,6 +6,7 @@ import { RecommendDrawer } from '@/app/components/RecommendDrawer';
 import { UIHeader } from '@/app/components/UIHeader';
 import { UniverseCanvas, UniverseNode } from '@/app/components/UniverseCanvas';
 import { NodeInfoCard } from '@/app/components/NodeInfoCard';
+import { ContactCard } from '@/app/components/ContactCard';
 import { fetchEdges, fetchInterestRecommendations } from '@/lib/api';
 import { getPersonality } from '@/lib/profiles';
 import { useTheme } from '@/lib/useTheme';
@@ -60,6 +61,9 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
   const [recommendError, setRecommendError] = useState('');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [toast, setToast] = useState('');
+  const [contactDismissed, setContactDismissed] = useState(false);
+  const [contactVisible, setContactVisible] = useState(false);
+  const [contactMounted, setContactMounted] = useState(false);
   const { view, containerRef, handlePointerDown } = useZoomPan();
   const personality = useMemo(() => getPersonality(nodes.map((node) => node.label)), [nodes]);
   const activeNode = useMemo(() => nodes.find((node) => node.id === selectedNodeId) ?? null, [nodes, selectedNodeId]);
@@ -134,6 +138,28 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
     return () => clearTimeout(timer);
   }, [toast]);
 
+  useEffect(() => {
+    const stored = typeof window !== 'undefined' ? window.localStorage.getItem('horizonContactDismissed') : null;
+    if (stored === 'true') {
+      setContactDismissed(true);
+      return;
+    }
+    setContactMounted(true);
+    const timer = setTimeout(() => setContactVisible(true), 180);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleCloseContactCard = () => {
+    setContactVisible(false);
+    setContactDismissed(true);
+    try {
+      window.localStorage.setItem('horizonContactDismissed', 'true');
+    } catch {
+      // ignore
+    }
+    setTimeout(() => setContactMounted(false), 260);
+  };
+
   const handleMoveNode = (id: string, position: { x: number; y: number }) => {
     setNodes((prev) => prev.map((node) => (node.id === id ? { ...node, x: position.x, y: position.y } : node)));
   };
@@ -196,6 +222,12 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
           Колесо — масштаб · Тяни фон — панорама · Клик по узлу — карточка
         </div>
       </div>
+
+      {contactMounted && !contactDismissed ? (
+        <div className="fixed bottom-4 left-4 z-40 max-w-full pr-4 sm:bottom-6 sm:left-6 sm:pr-0" data-ui-layer="true">
+          <ContactCard visible={contactVisible} onClose={handleCloseContactCard} />
+        </div>
+      ) : null}
     </div>
   );
 };

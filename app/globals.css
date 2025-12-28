@@ -4,9 +4,9 @@
 
 :root {
   color-scheme: light;
-  --bg-color: linear-gradient(180deg, #edf2fb 0%, #dfe7f5 45%, #d5deee 100%);
-  --surface: rgba(255, 255, 255, 0.82);
-  --panel-bg: rgba(255, 255, 255, 0.86);
+  --bg-color: linear-gradient(180deg, #f5f7fa 0%, #edf2f7 50%, #e2e8f0 100%);
+  --surface: rgba(255, 255, 255, 0.9);
+  --panel-bg: rgba(255, 255, 255, 0.92);
   --panel-border: rgba(15, 23, 42, 0.08);
   --text-primary: #0f172a;
   --text-secondary: #475569;
@@ -25,10 +25,10 @@
 
 :root.dark {
   color-scheme: dark;
-  --bg-color: linear-gradient(180deg, #050a16 0%, #0b1632 48%, #071222 100%);
-  --surface: rgba(8, 12, 22, 0.9);
-  --panel-bg: rgba(10, 16, 28, 0.9);
-  --panel-border: rgba(255, 255, 255, 0.1);
+  --bg-color: linear-gradient(180deg, #0b1740 0%, #0a1538 55%, #050e2d 100%);
+  --surface: rgba(8, 14, 32, 0.9);
+  --panel-bg: rgba(10, 16, 30, 0.88);
+  --panel-border: rgba(255, 255, 255, 0.08);
   --text-primary: #e9eef7;
   --text-secondary: #9fb1d3;
   --accent: #7c9dff;
