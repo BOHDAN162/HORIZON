@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 export type ViewportState = {
   offsetX: number;
@@ -51,16 +51,19 @@ export const useZoomPan = () => {
     [setView]
   );
 
-  const handlePointerDown = useCallback((event: PointerEvent) => {
-    if ((event.target as HTMLElement | null)?.closest('[data-node]')) return;
-    if ((event.target as HTMLElement | null)?.closest('[data-ui-layer="true"]')) return;
-    event.preventDefault();
-    const container = containerRef.current;
-    if (!container) return;
-    container.setPointerCapture(event.pointerId);
-    panStartRef.current = { x: event.clientX, y: event.clientY, offsetX: view.offsetX, offsetY: view.offsetY };
-    setIsPanning(true);
-  }, [view.offsetX, view.offsetY]);
+  const handlePointerDown = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if ((event.target as HTMLElement | null)?.closest('[data-node]')) return;
+      if ((event.target as HTMLElement | null)?.closest('[data-ui-layer="true"]')) return;
+      event.preventDefault();
+      const container = containerRef.current;
+      if (!container) return;
+      container.setPointerCapture(event.pointerId);
+      panStartRef.current = { x: event.clientX, y: event.clientY, offsetX: view.offsetX, offsetY: view.offsetY };
+      setIsPanning(true);
+    },
+    [view.offsetX, view.offsetY]
+  );
 
   const handlePointerMove = useCallback(
     (event: PointerEvent) => {
