@@ -3,11 +3,36 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AddInterestModal } from './AddInterestModal';
 import { ContentDrawer, RecommendationItem } from './ContentDrawer';
+import { OnboardingInterestsOverlay } from './OnboardingInterestsOverlay';
 import { UniverseCanvas, UniverseEdge, UniverseNode, UniverseView } from './UniverseCanvas';
+import { generateInitialLayout, stableIdFromLabel } from '@/lib/graphLayout';
 
 interface UniverseScreenProps {
   onBack: () => void;
 }
+
+const PRESET_INTERESTS = [
+  'Предпринимательство',
+  'Бизнес-мышление',
+  'Финансовая грамотность',
+  'Самодисциплина',
+  'Продуктивность',
+  'Психология',
+  'Коммуникация',
+  'Лидерство',
+  'Soft Skills',
+  'Маркетинг',
+  'Продажи',
+  'IT и технологии',
+  'Искусственный интеллект',
+  'Дизайн',
+  'Наука',
+  'История',
+  'Философия',
+  'Спорт и здоровье',
+  'Саморазвитие',
+  'Английский язык',
+];
 
 const createId = () => (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`);
 
@@ -26,6 +51,8 @@ export const UniverseScreen: React.FC<UniverseScreenProps> = ({ onBack }) => {
   const [nodes, setNodes] = useState<UniverseNode[]>(initialNodes);
   const [view, setView] = useState<UniverseView>({ offsetX: 0, offsetY: 0, scale: 1 });
   const [edges, setEdges] = useState<UniverseEdge[]>([]);
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [recommendations, setRecommendations] = useState<RecommendationItem[]>([]);
@@ -34,6 +61,7 @@ export const UniverseScreen: React.FC<UniverseScreenProps> = ({ onBack }) => {
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
   const requestAbortRef = useRef<AbortController | null>(null);
+  const onboardingHydratedRef = useRef(false);
 
   const handleAddInterest = (label: string) => {
     const trimmed = label.trim();
@@ -51,6 +79,66 @@ export const UniverseScreen: React.FC<UniverseScreenProps> = ({ onBack }) => {
 
     setNodes((prev) => [...prev, { id: createId(), label: trimmed, x: worldX, y: worldY }]);
     return { success: true as const };
+  };
+
+  const toggleInterest = (label: string) => {
+    setSelectedInterests((prev) => (prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]));
+  };
+
+  const persistOnboardingState = (interests: string[]) => {
+    try {
+      const unique = Array.from(new Set(interests));
+      localStorage.setItem('horizon:selectedInterests', JSON.stringify(unique));
+      localStorage.setItem('horizon:onboardingDone', '1');
+    } catch {
+      // ignore
+    }
+  };
+
+  const getWorldCenter = () => ({
+    x: -view.offsetX / view.scale,
+    y: -view.offsetY / view.scale,
+  });
+
+  const createNodesForInterests = (interests: string[], markFresh = false) => {
+    if (!interests.length) return;
+    const center = getWorldCenter();
+    const layout = generateInitialLayout(
+      interests,
+      center,
+      { min: 220, max: 360 },
+      120,
+      nodes.map((node) => ({ x: node.x, y: node.y }))
+    );
+    const newNodeIds: string[] = [];
+
+    setNodes((prev) => {
+      const existingLabels = new Set(prev.map((node) => node.label.toLowerCase()));
+      const existingIds = new Set(prev.map((node) => node.id));
+
+      const additions = layout.flatMap((node) => {
+        if (existingLabels.has(node.label.toLowerCase())) return [];
+        let id = node.id || stableIdFromLabel(node.label);
+        let idx = 1;
+        while (existingIds.has(id)) {
+          id = `${stableIdFromLabel(node.label)}-${idx}`;
+          idx += 1;
+        }
+
+        existingLabels.add(node.label.toLowerCase());
+        existingIds.add(id);
+        newNodeIds.push(id);
+        return [{ ...node, id, fresh: markFresh }];
+      });
+
+      return additions.length ? [...prev, ...additions] : prev;
+    });
+
+    if (markFresh && newNodeIds.length) {
+      setTimeout(() => {
+        setNodes((prev) => prev.map((node) => (newNodeIds.includes(node.id) ? { ...node, fresh: false } : node)));
+      }, 1300);
+    }
   };
 
   const moveNode = (id: string, delta: { dx: number; dy: number }) => {
@@ -71,7 +159,33 @@ export const UniverseScreen: React.FC<UniverseScreenProps> = ({ onBack }) => {
     return () => {
       document.body.style.overflow = previousOverflow;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (onboardingHydratedRef.current) return;
+    onboardingHydratedRef.current = true;
+
+    try {
+      const done = localStorage.getItem('horizon:onboardingDone') === '1';
+      const stored = localStorage.getItem('horizon:selectedInterests');
+      const parsed = stored ? JSON.parse(stored) : [];
+      const valid = Array.isArray(parsed) ? parsed.filter((item) => typeof item === 'string' && item.trim()) : [];
+
+      if (valid.length) {
+        setSelectedInterests(valid);
+        if (done) {
+          createNodesForInterests(valid);
+        }
+      }
+
+      if (!done) {
+        setIsOnboardingOpen(true);
+      }
+    } catch {
+      setIsOnboardingOpen(true);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const buildClientFallbackEdges = (interests: string[]) => {
     const unique = Array.from(new Set(interests));
@@ -129,7 +243,7 @@ export const UniverseScreen: React.FC<UniverseScreenProps> = ({ onBack }) => {
         const response = await fetch('/api/graph/edges', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ interests, maxEdgesPerNode: 3 }),
+          body: JSON.stringify({ interests, maxEdgesPerNode: 2 }),
           signal: controller.signal,
         });
 
@@ -169,6 +283,18 @@ export const UniverseScreen: React.FC<UniverseScreenProps> = ({ onBack }) => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes]);
+
+  const handleOnboardingContinue = () => {
+    if (!selectedInterests.length) return;
+    createNodesForInterests(selectedInterests, true);
+    setIsOnboardingOpen(false);
+    persistOnboardingState(selectedInterests);
+  };
+
+  const handleOnboardingSkip = () => {
+    setIsOnboardingOpen(false);
+    persistOnboardingState(selectedInterests);
+  };
 
   const fetchRecommendations = async () => {
     if (isLoading) return;
@@ -280,6 +406,15 @@ export const UniverseScreen: React.FC<UniverseScreenProps> = ({ onBack }) => {
           </div>
         </div>
       </div>
+
+      <OnboardingInterestsOverlay
+        open={isOnboardingOpen}
+        interests={PRESET_INTERESTS}
+        selected={selectedInterests}
+        onToggle={toggleInterest}
+        onContinue={handleOnboardingContinue}
+        onClose={handleOnboardingSkip}
+      />
 
       <ContentDrawer
         open={drawerOpen}

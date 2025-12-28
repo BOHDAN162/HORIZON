@@ -6,6 +6,7 @@ export interface UniverseNode {
   label: string;
   x: number;
   y: number;
+  fresh?: boolean;
 }
 
 export interface UniverseEdge {
@@ -238,6 +239,7 @@ export const UniverseCanvas: React.FC<UniverseCanvasProps> = ({ nodes, edges, vi
 
         {nodes.map((node, index) => {
           const colorClass = palette[index % palette.length];
+          const highlight = node.fresh;
           return (
             <div
               key={node.id}
@@ -247,9 +249,15 @@ export const UniverseCanvas: React.FC<UniverseCanvasProps> = ({ nodes, edges, vi
               aria-label={node.label}
             >
               <div
-                className={`planet-core grid h-7 w-7 place-items-center rounded-full border-2 border-white/15 bg-gradient-to-br ${colorClass} shadow-[0_10px_26px_rgba(111,135,255,0.4)] transition-transform duration-150 group-hover:scale-[1.18] group-active:scale-[1.12]`}
+                className={`planet-core grid h-7 w-7 place-items-center rounded-full border-2 border-white/15 bg-gradient-to-br ${colorClass} shadow-[0_10px_26px_rgba(111,135,255,0.4)] transition-transform duration-150 group-hover:scale-[1.18] group-active:scale-[1.12] ${
+                  highlight ? 'shadow-[0_0_0_6px_rgba(159,107,255,0.3)] animate-soft-glow' : ''
+                }`}
               />
-              <span className="pointer-events-none rounded-lg bg-[rgba(10,16,28,0.72)] px-2.5 py-1 text-[13px] font-medium text-[rgba(233,238,247,0.9)] backdrop-blur-sm transition-colors group-hover:text-white group-active:text-white">
+              <span
+                className={`pointer-events-none rounded-lg px-2.5 py-1 text-[13px] font-medium text-[rgba(233,238,247,0.9)] backdrop-blur-sm transition-colors group-hover:text-white group-active:text-white ${
+                  highlight ? 'bg-[rgba(111,135,255,0.16)] shadow-[0_0_0_1px_rgba(255,255,255,0.12)]' : 'bg-[rgba(10,16,28,0.72)]'
+                }`}
+              >
                 {node.label}
               </span>
             </div>
