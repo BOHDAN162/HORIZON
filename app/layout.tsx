@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru">
+    <html lang="ru" className="dark" data-theme="dark">
       <body className={`${inter.className} bg-background text-textPrimary antialiased`}>
         <div className="gradient-overlay" aria-hidden />
         <div className="relative z-10 min-h-screen">{children}</div>

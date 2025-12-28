@@ -7,7 +7,7 @@ export type ViewportState = {
 };
 
 const ZOOM_SPEED = 0.001;
-const MIN_SCALE = 0.4;
+const MIN_SCALE = 0.5;
 const MAX_SCALE = 2.8;
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
@@ -89,6 +89,17 @@ export const useZoomPan = () => {
     }
     panStartRef.current = null;
     setIsPanning(false);
+  }, []);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    setView((prev) => ({
+      ...prev,
+      offsetX: rect.width / 2,
+      offsetY: rect.height / 2,
+    }));
   }, []);
 
   useEffect(() => {

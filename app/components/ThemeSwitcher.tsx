@@ -11,7 +11,7 @@ export const ThemeSwitcher: React.FC = () => {
       onClick={toggleTheme}
       aria-label="Переключить тему"
       tabIndex={0}
-      className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--panel-border)] bg-[var(--panel-bg)] text-[var(--text-primary)] shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition hover:bg-[var(--hover-color)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+      className="flex items-center justify-center rounded-full p-2 text-[var(--text-primary)] transition hover:bg-[var(--hover-color)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
       data-ui-layer="true"
     >
       {isDark ? '🌙' : '☀️'}

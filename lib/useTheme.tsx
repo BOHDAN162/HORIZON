@@ -20,8 +20,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (stored === 'light' || stored === 'dark') {
       setThemeState(stored);
     } else {
-      const prefersLight = typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: light)').matches : false;
-      setThemeState(prefersLight ? 'light' : 'dark');
+      setThemeState('dark');
     }
   }, []);
 

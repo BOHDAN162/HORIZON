@@ -6,31 +6,20 @@ import { RecommendDrawer } from '@/app/components/RecommendDrawer';
 import { UIHeader } from '@/app/components/UIHeader';
 import { UniverseCanvas, UniverseNode } from '@/app/components/UniverseCanvas';
 import { NodeInfoCard } from '@/app/components/NodeInfoCard';
-import { fetchEdges, fetchInterestRecommendations, fetchYoutubeForInterests } from '@/lib/api';
+import { fetchEdges, fetchInterestRecommendations } from '@/lib/api';
 import { getPersonality } from '@/lib/profiles';
-import { ThemeProvider, useTheme } from '@/lib/useTheme';
+import { useTheme } from '@/lib/useTheme';
 import { useZoomPan } from '@/lib/useZoomPan';
 import type { Edge } from '@/app/components/EdgeLayer';
+import { hashColorIndex, resolveNodeVisual } from '@/lib/nodeColors';
 
 const INITIAL_NODES: UniverseNode[] = [
-  { id: 'tech', label: 'Технологии', x: -120, y: -60, color: '' },
-  { id: 'design', label: 'Дизайн', x: 120, y: -40, color: '' },
-  { id: 'philosophy', label: 'Философия', x: -60, y: 120, color: '' },
-  { id: 'business', label: 'Бизнес', x: 180, y: 140, color: '' },
-  { id: 'ai', label: 'AI', x: 20, y: -160, color: '' },
+  { id: 'tech', label: 'Технологии', x: -120, y: -60, colorIndex: hashColorIndex('Технологии') },
+  { id: 'design', label: 'Дизайн', x: 120, y: -40, colorIndex: hashColorIndex('Дизайн') },
+  { id: 'philosophy', label: 'Философия', x: -60, y: 120, colorIndex: hashColorIndex('Философия') },
+  { id: 'business', label: 'Бизнес', x: 180, y: 140, colorIndex: hashColorIndex('Бизнес') },
+  { id: 'ai', label: 'AI', x: 20, y: -160, colorIndex: hashColorIndex('AI') },
 ];
-
-const palette = [
-  'linear-gradient(135deg,#7c9dff,#5ec2ff)',
-  'linear-gradient(135deg,#9f6bff,#6fd1ff)',
-  'linear-gradient(135deg,#6b9fff,#c86bff)',
-  'linear-gradient(135deg,#6fe0ff,#6f87ff)',
-  'linear-gradient(135deg,#8fb3ff,#9f6bff)',
-  'linear-gradient(135deg,#ffb86c,#ff9b9b)',
-  'linear-gradient(135deg,#6ff0c4,#5fb3ff)',
-];
-
-const buildColor = (index: number) => palette[index % palette.length];
 
 const clampEdges = (edges: Array<{ source: string; target: string }>, nodes: UniverseNode[]) => {
   const mapByLabel = new Map(nodes.map((node) => [node.label, node.id]));
@@ -62,7 +51,7 @@ interface UniverseScreenProps {
 }
 
 const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
-  const [nodes, setNodes] = useState<UniverseNode[]>(() => INITIAL_NODES.map((node, index) => ({ ...node, color: buildColor(index) })));
+  const [nodes, setNodes] = useState<UniverseNode[]>(() => INITIAL_NODES);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [isRecommendOpen, setIsRecommendOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -70,14 +59,12 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
   const [recommendLoading, setRecommendLoading] = useState(false);
   const [recommendError, setRecommendError] = useState('');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [contentItems, setContentItems] = useState<{ title: string; url: string }[]>([]);
-  const [contentLoading, setContentLoading] = useState(false);
-  const [contentError, setContentError] = useState('');
   const [toast, setToast] = useState('');
   const { view, containerRef, handlePointerDown } = useZoomPan();
   const personality = useMemo(() => getPersonality(nodes.map((node) => node.label)), [nodes]);
   const activeNode = useMemo(() => nodes.find((node) => node.id === selectedNodeId) ?? null, [nodes, selectedNodeId]);
   const { theme } = useTheme();
+  const getVisual = useCallback((label: string) => resolveNodeVisual(label, theme), [theme]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -96,7 +83,10 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
     }
     const worldX = (window.innerWidth / 2 - view.offsetX) / view.scale;
     const worldY = (window.innerHeight / 2 - view.offsetY) / view.scale;
-    setNodes((prev) => [...prev, { id: crypto.randomUUID(), label: trimmed, x: worldX, y: worldY, color: buildColor(prev.length) }]);
+    setNodes((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), label: trimmed, x: worldX, y: worldY, colorIndex: hashColorIndex(trimmed) },
+    ]);
     setToast('Интерес добавлен');
     return { success: true as const };
   };
@@ -152,25 +142,6 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
     setSelectedNodeId(id);
   };
 
-  const handleFetchContent = async () => {
-    setContentLoading(true);
-    setContentError('');
-    try {
-      const interestList = nodes.map((node) => node.label);
-      if (!interestList.length) {
-        setContentError('Добавьте интересы');
-        return;
-      }
-      const items = await fetchYoutubeForInterests(interestList, 8);
-      setContentItems(items.map((item) => ({ title: item.title, url: item.url })));
-    } catch {
-      setContentError('Ошибка загрузки. Попробуйте позже.');
-      setContentItems([]);
-    } finally {
-      setContentLoading(false);
-    }
-  };
-
   return (
     <div className={`${theme} relative h-screen w-screen overflow-hidden bg-[var(--bg-color)]`} data-theme={theme}>
       <div className="starry-layer pointer-events-none fixed inset-0" aria-hidden />
@@ -184,58 +155,20 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
           onNodeClick={handleNodeClick}
           containerRef={containerRef}
           onBackgroundPointerDown={handlePointerDown}
+          theme={theme}
         />
       </div>
 
       <div className="overlay-layer pointer-events-none fixed inset-0">
         {activeNode ? <NodeInfoCard node={activeNode} view={view} onClose={() => setSelectedNodeId(null)} /> : null}
-        <div className="pointer-events-auto absolute bottom-4 right-4 flex flex-col items-end gap-2" data-ui-layer="true">
-          <button
-            type="button"
-            onClick={handleFetchContent}
-            className="rounded-full bg-[var(--accent-gradient)] px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_40px_rgba(96,123,255,0.35)] transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-          >
-            {contentLoading ? 'Подбираем…' : 'Подобрать контент'}
-          </button>
-          {contentError ? <p className="rounded-xl bg-[#f2939a]/20 px-3 py-2 text-xs text-[#ffd9de]">{contentError}</p> : null}
-          {contentItems.length ? (
-            <div className="w-full max-w-sm rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-bg)] p-3 shadow-[0_16px_50px_rgba(0,0,0,0.35)]">
-              <p className="mb-2 text-sm font-semibold text-[var(--text-primary)]">Подборка видео</p>
-              <div className="flex max-h-56 flex-col gap-2 overflow-y-auto">
-                {contentItems.map((item) => (
-                  <a
-                    key={item.url}
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rounded-lg border border-[var(--panel-border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text-primary)] transition hover:border-[var(--accent)] hover:bg-[var(--hover-color)]"
-                  >
-                    {item.title}
-                  </a>
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </div>
       </div>
 
       <UIHeader
-        personality={personality}
+        personalityName={personality.name}
         onAdd={() => setAddModalOpen(true)}
         onToggleDrawer={() => setIsRecommendOpen((prev) => !prev)}
         onBack={onBack}
       />
-
-      {onBack ? (
-        <button
-          type="button"
-          aria-label="Назад"
-          onClick={() => onBack?.()}
-          className="pointer-events-auto fixed left-4 top-4 z-40 hidden h-10 w-10 items-center justify-center rounded-full border border-[var(--panel-border)] bg-[var(--panel-bg)] text-lg text-[var(--text-primary)] shadow-[0_12px_30px_rgba(0,0,0,0.28)] transition hover:bg-[var(--hover-color)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] sm:flex"
-        >
-          ←
-        </button>
-      ) : null}
 
       <RecommendDrawer
         open={isRecommendOpen}
@@ -245,6 +178,7 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
         onClose={() => setIsRecommendOpen(false)}
         onRefresh={refreshRecommendations}
         onAdd={handleAddFromRecommendation}
+        getColorForLabel={getVisual}
       />
 
       <AddInterestModal isOpen={addModalOpen} onClose={() => setAddModalOpen(false)} onAdd={handleAddInterest} />
@@ -258,7 +192,7 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
       ) : null}
 
       <div className="fixed inset-x-0 bottom-4 flex justify-center px-4" data-ui-layer="true">
-        <div className="rounded-full border border-[var(--panel-border)] bg-[var(--panel-bg)] px-4 py-2 text-xs font-semibold text-[var(--text-secondary)] shadow-[0_12px_35px_rgba(0,0,0,0.28)]">
+        <div className="rounded-md bg-black/50 px-4 py-2 text-xs font-semibold text-gray-200 shadow-lg backdrop-blur-md dark:bg-white/20 dark:text-gray-800">
           Колесо — масштаб · Тяни фон — панорама · Клик по узлу — карточка
         </div>
       </div>
@@ -267,9 +201,5 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
 };
 
 export default function UniverseScreen(props: UniverseScreenProps) {
-  return (
-    <ThemeProvider>
-      <InnerUniverse {...props} />
-    </ThemeProvider>
-  );
+  return <InnerUniverse {...props} />;
 }

@@ -2,8 +2,9 @@ import React, { useMemo } from 'react';
 import { EdgeLayer, Edge } from './EdgeLayer';
 import { Node } from './Node';
 import { ViewportState } from '@/lib/useZoomPan';
+import { getNodeVisual, ThemeMode } from '@/lib/nodeColors';
 
-export type UniverseNode = { id: string; label: string; x: number; y: number; color: string };
+export type UniverseNode = { id: string; label: string; x: number; y: number; colorIndex: number };
 
 type Props = {
   nodes: UniverseNode[];
@@ -13,17 +14,10 @@ type Props = {
   onNodeClick: (id: string) => void;
   containerRef: React.RefObject<HTMLDivElement>;
   onBackgroundPointerDown: (event: React.PointerEvent<HTMLDivElement>) => void;
+  theme: ThemeMode;
 };
 
-const NODE_RADIUS = 28;
-
-const palette = [
-  'linear-gradient(135deg,#7c9dff,#5ec2ff)',
-  'linear-gradient(135deg,#9f6bff,#6fd1ff)',
-  'linear-gradient(135deg,#6b9fff,#c86bff)',
-  'linear-gradient(135deg,#6fe0ff,#6f87ff)',
-  'linear-gradient(135deg,#8fb3ff,#9f6bff)',
-];
+const NODE_RADIUS = 18;
 
 export const UniverseCanvas: React.FC<Props> = ({
   nodes,
@@ -33,10 +27,15 @@ export const UniverseCanvas: React.FC<Props> = ({
   onNodeClick,
   containerRef,
   onBackgroundPointerDown,
+  theme,
 }) => {
   const coloredNodes = useMemo(
-    () => nodes.map((node, index) => ({ ...node, color: node.color || palette[index % palette.length] })),
-    [nodes]
+    () =>
+      nodes.map((node) => ({
+        ...node,
+        visual: getNodeVisual(node.colorIndex, theme),
+      })),
+    [nodes, theme]
   );
 
   return (
@@ -51,12 +50,22 @@ export const UniverseCanvas: React.FC<Props> = ({
         style={{
           transform: `translate3d(${view.offsetX}px, ${view.offsetY}px, 0) scale(${view.scale})`,
           transformOrigin: '0 0',
-          transition: 'transform 0.1s ease-out',
         }}
       >
+        <div className="pointer-events-none absolute -left-[2000px] -top-[2000px] h-[4000px] w-[4000px] opacity-70">
+          <div className="h-full w-full bg-[radial-gradient(1px_1px_at_15%_25%,rgba(255,255,255,0.65),transparent),radial-gradient(1.5px_1.5px_at_35%_70%,rgba(121,176,255,0.65),transparent),radial-gradient(1.2px_1.2px_at_75%_20%,rgba(177,138,255,0.6),transparent),radial-gradient(1px_1px_at_55%_45%,rgba(255,255,255,0.5),transparent),radial-gradient(1.4px_1.4px_at_85%_80%,rgba(126,167,255,0.55),transparent),radial-gradient(1px_1px_at_5%_60%,rgba(255,255,255,0.52),transparent)]" />
+        </div>
         <EdgeLayer nodes={coloredNodes} edges={edges} radius={NODE_RADIUS} />
         {coloredNodes.map((node) => (
-          <Node key={node.id} node={node} view={view} radius={NODE_RADIUS} onMove={onMoveNode} onClick={onNodeClick} />
+          <Node
+            key={node.id}
+            node={node}
+            view={view}
+            radius={NODE_RADIUS}
+            visual={node.visual}
+            onMove={onMoveNode}
+            onClick={onNodeClick}
+          />
         ))}
       </div>
     </div>
