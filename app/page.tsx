@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { LandingScreen } from '@/components/LandingScreen';
-import { UniverseScreen } from '@/components/UniverseScreen';
+import { UniverseScreen } from '@/app/(client)/UniverseScreen';
 
 export default function Home() {
   const [view, setView] = useState<'landing' | 'universe'>('landing');
