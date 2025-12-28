@@ -57,7 +57,11 @@ const buildFallbackEdges = (nodes: UniverseNode[]): Edge[] => {
   return clampEdges(edges, nodes);
 };
 
-const InnerUniverse: React.FC = () => {
+type UniverseScreenProps = {
+  onBack?: () => void;
+};
+
+const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
   const [nodes, setNodes] = useState<UniverseNode[]>(() => INITIAL_NODES.map((node, index) => ({ ...node, color: buildColor(index) })));
   const [edges, setEdges] = useState<Edge[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -214,7 +218,7 @@ const InnerUniverse: React.FC = () => {
         </div>
       </div>
 
-      <UIHeader personality={personality} onAdd={() => setAddModalOpen(true)} onToggleDrawer={() => setDrawerOpen((prev) => !prev)} />
+      <UIHeader personality={personality} onAdd={() => setAddModalOpen(true)} onToggleDrawer={() => setDrawerOpen((prev) => !prev)} onBack={onBack} />
 
       <RecommendDrawer
         open={drawerOpen}
@@ -245,8 +249,8 @@ const InnerUniverse: React.FC = () => {
   );
 };
 
-export const UniverseScreen: React.FC = () => (
+export const UniverseScreen: React.FC<UniverseScreenProps> = (props) => (
   <ThemeProvider>
-    <InnerUniverse />
+    <InnerUniverse {...props} />
   </ThemeProvider>
 );
