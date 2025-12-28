@@ -76,7 +76,7 @@ export const NodeInfoCard: React.FC<Props> = ({ node, view, onClose }) => {
   return (
     <div
       ref={cardRef}
-      className="pointer-events-auto absolute w-[320px] rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-bg)] p-4 shadow-[0_20px_70px_rgba(0,0,0,0.45)]"
+      className="pointer-events-auto absolute w-[320px] rounded-2xl border border-[var(--panel-border)] bg-[var(--card-overlay)] p-4 shadow-[0_20px_70px_rgba(0,0,0,0.45)] backdrop-blur-xl"
       style={{ left: position.left, top: position.top }}
       data-ui-layer="true"
     >
@@ -120,7 +120,6 @@ export const NodeInfoCard: React.FC<Props> = ({ node, view, onClose }) => {
                 className="block rounded-xl border border-[var(--panel-border)] bg-[var(--surface)] px-3 py-2 transition hover:border-[var(--accent)] hover:bg-[var(--hover-color)]"
               >
                 <p className="text-sm font-semibold text-[var(--text-primary)]">{item.title}</p>
-                <p className="text-xs text-[var(--text-secondary)]">{item.channelTitle}</p>
               </a>
             ))
           : null}

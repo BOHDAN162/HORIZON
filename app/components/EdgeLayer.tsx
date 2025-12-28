@@ -17,6 +17,7 @@ export const EdgeLayer: React.FC<Props> = ({ nodes, edges, radius }) => {
   }, [nodes]);
 
   const lines = useMemo(() => {
+    const padded = radius + 3;
     return edges
       .map((edge) => {
         const source = nodeMap.get(edge.sourceId);
@@ -37,10 +38,10 @@ export const EdgeLayer: React.FC<Props> = ({ nodes, edges, radius }) => {
 
         return {
           id: edge.id,
-          x1: sx + ux * radius,
-          y1: sy + uy * radius,
-          x2: tx - ux * radius,
-          y2: ty - uy * radius,
+          x1: sx + ux * padded,
+          y1: sy + uy * padded,
+          x2: tx - ux * padded,
+          y2: ty - uy * padded,
         };
       })
       .filter(Boolean) as Array<{ id: string; x1: number; y1: number; x2: number; y2: number }>;

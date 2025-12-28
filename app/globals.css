@@ -4,32 +4,44 @@
 
 :root {
   color-scheme: light;
-  --bg-color: linear-gradient(180deg, #f5f7fa 0%, #e2e8f0 100%);
-  --surface: rgba(255, 255, 255, 0.75);
-  --panel-bg: rgba(255, 255, 255, 0.8);
+  --bg-color: linear-gradient(180deg, #edf2fb 0%, #dfe7f5 45%, #d5deee 100%);
+  --surface: rgba(255, 255, 255, 0.82);
+  --panel-bg: rgba(255, 255, 255, 0.86);
   --panel-border: rgba(15, 23, 42, 0.08);
   --text-primary: #0f172a;
   --text-secondary: #475569;
   --accent: #6f87ff;
-  --accent-2: #9f6bff;
-  --accent-gradient: linear-gradient(135deg, #6f87ff, #9f6bff);
+  --accent-2: #a855f7;
+  --accent-gradient: linear-gradient(135deg, #8b5cf6, #60a5fa);
   --edge-color: #94a3b8;
-  --hover-color: rgba(148, 163, 184, 0.18);
+  --hover-color: rgba(148, 163, 184, 0.16);
+  --chip-bg: rgba(120, 113, 255, 0.14);
+  --chip-text: #0f172a;
+  --node-label-shadow: 0 2px 12px rgba(255, 255, 255, 0.35);
+  --node-label-bg: rgba(255, 255, 255, 0.9);
+  --card-overlay: rgba(255, 255, 255, 0.82);
+  --drawer-backdrop: rgba(255, 255, 255, 0.35);
 }
 
 :root.dark {
   color-scheme: dark;
-  --bg-color: linear-gradient(180deg, #050e2d 0%, #0b1740 100%);
+  --bg-color: linear-gradient(180deg, #050a16 0%, #0b1632 48%, #071222 100%);
   --surface: rgba(8, 12, 22, 0.9);
-  --panel-bg: rgba(10, 16, 28, 0.92);
-  --panel-border: rgba(255, 255, 255, 0.08);
+  --panel-bg: rgba(10, 16, 28, 0.9);
+  --panel-border: rgba(255, 255, 255, 0.1);
   --text-primary: #e9eef7;
   --text-secondary: #9fb1d3;
   --accent: #7c9dff;
-  --accent-2: #9f6bff;
-  --accent-gradient: linear-gradient(135deg, #7c9dff, #9f6bff);
+  --accent-2: #b388ff;
+  --accent-gradient: linear-gradient(135deg, #7c9dff, #b388ff);
   --edge-color: #6d57c4;
-  --hover-color: rgba(255, 255, 255, 0.06);
+  --hover-color: rgba(255, 255, 255, 0.08);
+  --chip-bg: rgba(129, 103, 255, 0.32);
+  --chip-text: #f8fafc;
+  --node-label-shadow: 0 2px 14px rgba(0, 0, 0, 0.6);
+  --node-label-bg: rgba(8, 12, 22, 0.72);
+  --card-overlay: rgba(10, 16, 28, 0.9);
+  --drawer-backdrop: rgba(0, 0, 0, 0.4);
 }
 
 * {

@@ -1,4 +1,5 @@
 import React from 'react';
+import { NodeVisual } from '@/lib/nodeColors';
 
 type Item = {
   label: string;
@@ -12,18 +13,21 @@ type Props = {
   onClose: () => void;
   onRefresh: () => void;
   onAdd: (label: string) => void;
+  getColorForLabel?: (label: string) => NodeVisual;
 };
 
-export const RecommendDrawer: React.FC<Props> = ({ open, loading, error, items, onClose, onRefresh, onAdd }) => {
+export const RecommendDrawer: React.FC<Props> = ({ open, loading, error, items, onClose, onRefresh, onAdd, getColorForLabel }) => {
   return (
     <>
       <div
-        className={`fixed inset-0 z-30 bg-black/30 transition-opacity duration-300 ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+        className={`fixed inset-0 z-30 bg-[var(--drawer-backdrop)] backdrop-blur-md transition-opacity duration-300 ${
+          open ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
         onClick={onClose}
         data-ui-layer="true"
       />
       <aside
-        className={`fixed left-0 right-0 bottom-0 z-40 flex h-[70vh] w-full flex-col border-t border-[var(--panel-border)] bg-[var(--panel-bg)] shadow-[0_-12px_50px_rgba(0,0,0,0.35)] transition-transform duration-300 sm:bottom-0 sm:left-0 sm:right-auto sm:top-0 sm:h-full sm:max-w-[320px] sm:border-t-0 sm:border-r sm:shadow-[0_20px_80px_rgba(0,0,0,0.4)] ${
+        className={`fixed left-0 right-0 bottom-0 z-40 flex h-[65vh] w-full flex-col border-t border-[var(--panel-border)] bg-[var(--panel-bg)] shadow-[0_-12px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-transform duration-300 sm:bottom-0 sm:left-0 sm:right-auto sm:top-0 sm:h-full sm:max-w-[340px] sm:border-t-0 sm:border-r sm:shadow-[0_20px_80px_rgba(0,0,0,0.4)] ${
           open ? 'translate-y-0 sm:translate-x-0' : 'translate-y-full sm:-translate-x-full'
         }`}
         data-ui-layer="true"
@@ -75,20 +79,28 @@ export const RecommendDrawer: React.FC<Props> = ({ open, loading, error, items, 
           ) : null}
 
           <div className="mt-4 space-y-3">
-            {items.map((item) => (
-              <button
-                key={item.label}
-                type="button"
-                onClick={() => onAdd(item.label)}
-                className="flex w-full items-center justify-between rounded-xl border border-[var(--panel-border)] bg-[var(--surface)] px-3.5 py-3 text-left transition hover:border-[var(--accent)] hover:bg-[var(--hover-color)]"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="h-2.5 w-2.5 rounded-full bg-[var(--accent)]" />
-                  <span className="text-sm font-semibold text-[var(--text-primary)]">{item.label}</span>
-                </div>
-                <span className="text-lg text-[var(--text-primary)]">＋</span>
-              </button>
-            ))}
+            {items.map((item) => {
+              const visual = getColorForLabel?.(item.label);
+              return (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={() => onAdd(item.label)}
+                  className="flex w-full items-center justify-between rounded-xl border border-[var(--panel-border)] bg-[var(--surface)] px-3.5 py-3 text-left transition hover:border-[var(--accent)] hover:bg-[var(--hover-color)]"
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full"
+                      style={{
+                        background: visual ? visual.gradient : 'var(--accent)',
+                      }}
+                    />
+                    <span className="text-sm font-semibold text-[var(--text-primary)]">{item.label}</span>
+                  </div>
+                  <span className="text-lg text-[var(--text-primary)]">＋</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </aside>

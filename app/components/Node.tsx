@@ -1,15 +1,17 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { ViewportState } from '@/lib/useZoomPan';
+import { NodeVisual } from '@/lib/nodeColors';
 
 type Props = {
-  node: { id: string; label: string; x: number; y: number; color: string };
+  node: { id: string; label: string; x: number; y: number };
   view: ViewportState;
   radius: number;
+  visual: NodeVisual;
   onMove: (id: string, pos: { x: number; y: number }) => void;
   onClick: (id: string) => void;
 };
 
-export const Node: React.FC<Props> = ({ node, view, radius, onMove, onClick }) => {
+export const Node: React.FC<Props> = ({ node, view, radius, visual, onMove, onClick }) => {
   const [dragging, setDragging] = useState(false);
   const pointerRef = useRef<{ startX: number; startY: number; startNodeX: number; startNodeY: number } | null>(null);
 
@@ -64,10 +66,22 @@ export const Node: React.FC<Props> = ({ node, view, radius, onMove, onClick }) =
       style={style}
     >
       <div
-        className="group grid h-[48px] min-w-[48px] place-items-center rounded-full border-2 border-white/10 shadow-[0_14px_30px_rgba(0,0,0,0.25)] transition-transform duration-150 hover:scale-[1.08]"
-        style={{ background: node.color }}
+        className="group flex items-center gap-3 rounded-full px-1 py-1"
+        style={{ color: visual.text }}
       >
-        <span className="whitespace-nowrap rounded-full bg-[var(--surface)] px-3 py-1 text-xs font-semibold text-[var(--text-primary)] shadow-[0_6px_18px_rgba(0,0,0,0.18)]">
+        <div
+          className="relative grid h-9 w-9 place-items-center rounded-full transition-transform duration-150 group-hover:scale-[1.08]"
+          style={{
+            backgroundImage: visual.gradient,
+            boxShadow: `0 12px 28px rgba(0,0,0,0.32), 0 0 0 6px rgba(255,255,255,0.04), 0 0 24px ${visual.glow}`,
+          }}
+        >
+          <div className="absolute inset-0 rounded-full bg-white/6 opacity-0 blur-lg transition-opacity duration-150 group-hover:opacity-60" />
+        </div>
+        <span
+          className="rounded-md px-2.5 py-1 text-[13px] font-medium tracking-tight text-[var(--text-primary)] shadow-[var(--node-label-shadow)] backdrop-blur-sm transition-colors group-hover:text-white"
+          style={{ background: 'var(--node-label-bg)' }}
+        >
           {node.label}
         </span>
       </div>
