@@ -57,14 +57,14 @@ const buildFallbackEdges = (nodes: UniverseNode[]): Edge[] => {
   return clampEdges(edges, nodes);
 };
 
-type UniverseScreenProps = {
+interface UniverseScreenProps {
   onBack?: () => void;
-};
+}
 
 const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
   const [nodes, setNodes] = useState<UniverseNode[]>(() => INITIAL_NODES.map((node, index) => ({ ...node, color: buildColor(index) })));
   const [edges, setEdges] = useState<Edge[]>([]);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isRecommendOpen, setIsRecommendOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [recommendations, setRecommendations] = useState<{ label: string }[]>([]);
   const [recommendLoading, setRecommendLoading] = useState(false);
@@ -74,7 +74,7 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
   const [contentLoading, setContentLoading] = useState(false);
   const [contentError, setContentError] = useState('');
   const [toast, setToast] = useState('');
-  const { view, setView, containerRef, handlePointerDown } = useZoomPan();
+  const { view, containerRef, handlePointerDown } = useZoomPan();
   const personality = useMemo(() => getPersonality(nodes.map((node) => node.label)), [nodes]);
   const activeNode = useMemo(() => nodes.find((node) => node.id === selectedNodeId) ?? null, [nodes, selectedNodeId]);
   const { theme } = useTheme();
@@ -111,7 +111,12 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
         return;
       }
       const recs = await fetchInterestRecommendations(interestList);
-      setRecommendations(recs.slice(0, 7).map((label) => ({ label })));
+      const existing = new Set(interestList.map((item) => item.toLowerCase()));
+      const filtered = recs.filter((label) => !existing.has(label.toLowerCase()));
+      if (!filtered.length) {
+        setRecommendError('Пока нет новых рекомендаций');
+      }
+      setRecommendations(filtered.slice(0, 7).map((label) => ({ label })));
     } catch {
       setRecommendError('Ошибка загрузки. Попробуйте позже.');
       setRecommendations([]);
@@ -123,15 +128,15 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
   const handleAddFromRecommendation = (label: string) => {
     const result = handleAddInterest(label);
     if (result.success) {
-      setDrawerOpen(false);
+      setIsRecommendOpen(false);
     }
   };
 
   useEffect(() => {
-    if (drawerOpen) {
+    if (isRecommendOpen) {
       refreshRecommendations();
     }
-  }, [drawerOpen, refreshRecommendations]);
+  }, [isRecommendOpen, refreshRecommendations]);
 
   useEffect(() => {
     if (!toast) return undefined;
@@ -167,14 +172,10 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-[var(--bg-color)]">
+    <div className={`${theme} relative h-screen w-screen overflow-hidden bg-[var(--bg-color)]`} data-theme={theme}>
       <div className="starry-layer pointer-events-none fixed inset-0" aria-hidden />
 
-      <div
-        className="world-layer fixed inset-0"
-        ref={containerRef}
-        onPointerDown={handlePointerDown}
-      >
+      <div className="world-layer fixed inset-0">
         <UniverseCanvas
           nodes={nodes}
           edges={edges}
@@ -192,8 +193,8 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
           <button
             type="button"
             onClick={handleFetchContent}
-          className="rounded-full bg-[var(--accent-gradient)] px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_40px_rgba(96,123,255,0.35)] transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-        >
+            className="rounded-full bg-[var(--accent-gradient)] px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_40px_rgba(96,123,255,0.35)] transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          >
             {contentLoading ? 'Подбираем…' : 'Подобрать контент'}
           </button>
           {contentError ? <p className="rounded-xl bg-[#f2939a]/20 px-3 py-2 text-xs text-[#ffd9de]">{contentError}</p> : null}
@@ -218,14 +219,30 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
         </div>
       </div>
 
-      <UIHeader personality={personality} onAdd={() => setAddModalOpen(true)} onToggleDrawer={() => setDrawerOpen((prev) => !prev)} onBack={onBack} />
+      <UIHeader
+        personality={personality}
+        onAdd={() => setAddModalOpen(true)}
+        onToggleDrawer={() => setIsRecommendOpen((prev) => !prev)}
+        onBack={onBack}
+      />
+
+      {onBack ? (
+        <button
+          type="button"
+          aria-label="Назад"
+          onClick={() => onBack?.()}
+          className="pointer-events-auto fixed left-4 top-4 z-40 hidden h-10 w-10 items-center justify-center rounded-full border border-[var(--panel-border)] bg-[var(--panel-bg)] text-lg text-[var(--text-primary)] shadow-[0_12px_30px_rgba(0,0,0,0.28)] transition hover:bg-[var(--hover-color)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] sm:flex"
+        >
+          ←
+        </button>
+      ) : null}
 
       <RecommendDrawer
-        open={drawerOpen}
+        open={isRecommendOpen}
         loading={recommendLoading}
         error={recommendError}
         items={recommendations}
-        onClose={() => setDrawerOpen(false)}
+        onClose={() => setIsRecommendOpen(false)}
         onRefresh={refreshRecommendations}
         onAdd={handleAddFromRecommendation}
       />
@@ -249,8 +266,10 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
   );
 };
 
-export const UniverseScreen: React.FC<UniverseScreenProps> = (props) => (
-  <ThemeProvider>
-    <InnerUniverse {...props} />
-  </ThemeProvider>
-);
+export default function UniverseScreen(props: UniverseScreenProps) {
+  return (
+    <ThemeProvider>
+      <InnerUniverse {...props} />
+    </ThemeProvider>
+  );
+}
