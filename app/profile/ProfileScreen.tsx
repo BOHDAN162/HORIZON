@@ -6,29 +6,25 @@ import { ThemeSwitcher } from '@/app/components/ThemeSwitcher';
 import { useTheme } from '@/lib/useTheme';
 import { useProfile } from '@/lib/useProfile';
 
-const AvatarBadge: React.FC<{ name: string; avatarUrl?: string }> = ({ name, avatarUrl }) => {
-  const initials = useMemo(
-    () =>
-      name
-        .split(' ')
-        .map((part) => part[0])
-        .join('')
-        .slice(0, 2)
-        .toUpperCase(),
-    [name]
-  );
-
-  return (
-    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full border-2 border-white/20 bg-gradient-to-br from-[#7c9dff] via-[#8b5cf6] to-[#4b91f7] shadow-[0_16px_55px_rgba(0,0,0,0.4)]">
-      {avatarUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={avatarUrl} alt={name} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
-      ) : (
-        <div className="flex h-full w-full items-center justify-center bg-[#0f2453] text-lg font-semibold text-white">{initials}</div>
-      )}
+const AvatarBadge: React.FC<{ name: string }> = ({ name }) => (
+  <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full border border-white/10 bg-gradient-to-br from-[#7c9dff] via-[#8b5cf6] to-[#4b91f7] shadow-[0_16px_55px_rgba(0,0,0,0.4)]">
+    <div className="flex h-full w-full items-center justify-center rounded-full border border-white/20 bg-white/10 text-white">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        className="h-10 w-10 text-white/80"
+        role="img"
+        aria-label={`${name} avatar placeholder`}
+      >
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 20c0-3.314 3.134-6 7-6h2c3.866 0 7 2.686 7 6" />
+      </svg>
     </div>
-  );
-};
+  </div>
+);
 
 const Switch: React.FC<{ checked: boolean; onChange: (value: boolean) => void; theme: 'light' | 'dark' }> = ({
   checked,
@@ -226,7 +222,7 @@ export const ProfileScreen: React.FC = () => {
         <div className="mt-10 flex flex-col gap-6 md:gap-8">
           <div className={`w-full rounded-3xl border ${cardBase} backdrop-blur-xl`}>
             <div className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:gap-5 sm:px-8 sm:py-7">
-              <AvatarBadge name={profile.displayName} avatarUrl={profile.avatarUrl} />
+              <AvatarBadge name={profile.displayName} />
               <div className="flex flex-1 flex-col gap-1">
                 <p className="text-lg font-semibold sm:text-xl">{profile.displayName}</p>
                 <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
