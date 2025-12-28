@@ -5,12 +5,11 @@ interface GraphLinksLayerProps {
   nodes: UniverseNode[];
   edges: UniverseEdge[];
   nodeRadius: number;
-  arrowPadding: number;
+  linkPadding: number;
 }
 
-export const GraphLinksLayer: React.FC<GraphLinksLayerProps> = ({ nodes, edges, nodeRadius, arrowPadding }) => {
+export const GraphLinksLayer: React.FC<GraphLinksLayerProps> = ({ nodes, edges, nodeRadius, linkPadding }) => {
   const gradientId = useId();
-  const markerId = useId();
   const nodeById = useMemo(() => {
     const map = new Map<string, UniverseNode>();
     nodes.forEach((node) => map.set(node.id, node));
@@ -32,10 +31,10 @@ export const GraphLinksLayer: React.FC<GraphLinksLayerProps> = ({ nodes, edges, 
         const ux = dx / distance;
         const uy = dy / distance;
 
-        const startX = source.x + ux * (nodeRadius + arrowPadding);
-        const startY = source.y + uy * (nodeRadius + arrowPadding);
-        const endX = target.x - ux * (nodeRadius + arrowPadding + 2);
-        const endY = target.y - uy * (nodeRadius + arrowPadding + 2);
+        const startX = source.x + ux * (nodeRadius + linkPadding);
+        const startY = source.y + uy * (nodeRadius + linkPadding);
+        const endX = target.x - ux * (nodeRadius + linkPadding + 2);
+        const endY = target.y - uy * (nodeRadius + linkPadding + 2);
 
         return {
           id: edge.id,
@@ -71,7 +70,7 @@ export const GraphLinksLayer: React.FC<GraphLinksLayerProps> = ({ nodes, edges, 
       height: Math.max(maxY - minY, 1),
       edges: validEdges,
     };
-  }, [arrowPadding, edges, nodeById, nodeRadius]);
+  }, [edges, linkPadding, nodeById, nodeRadius]);
 
   if (!geometry) return null;
 
@@ -91,17 +90,6 @@ export const GraphLinksLayer: React.FC<GraphLinksLayerProps> = ({ nodes, edges, 
           <stop offset="0%" stopColor="#a4b5ff" stopOpacity="0.65" />
           <stop offset="100%" stopColor="#6f87ff" stopOpacity="0.55" />
         </linearGradient>
-        <marker
-          id={`${markerId}-arrow`}
-          markerWidth="10"
-          markerHeight="10"
-          refX="6"
-          refY="5"
-          orient="auto"
-          markerUnits="strokeWidth"
-        >
-          <path d="M1,1 L1,9 L9,5 z" fill={`url(#${gradientId}-link)`} />
-        </marker>
       </defs>
 
       {geometry.edges.map((edge) => (
@@ -115,7 +103,6 @@ export const GraphLinksLayer: React.FC<GraphLinksLayerProps> = ({ nodes, edges, 
           strokeWidth={1.25}
           strokeOpacity={0.6}
           strokeLinecap="round"
-          markerEnd={`url(#${markerId}-arrow)`}
           className="edge-line drop-shadow-[0_0_12px_rgba(124,157,255,0.35)]"
         />
       ))}

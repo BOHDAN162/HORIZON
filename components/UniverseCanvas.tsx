@@ -233,7 +233,7 @@ export const UniverseCanvas: React.FC<UniverseCanvasProps> = ({ nodes, edges, vi
       >
         <div className="pointer-events-none relative">
           <div className="absolute inset-0">
-            <GraphLinksLayer nodes={nodes} edges={edges} nodeRadius={NODE_RADIUS} arrowPadding={EDGE_PADDING} />
+            <GraphLinksLayer nodes={nodes} edges={edges} nodeRadius={NODE_RADIUS} linkPadding={EDGE_PADDING} />
           </div>
         </div>
 
