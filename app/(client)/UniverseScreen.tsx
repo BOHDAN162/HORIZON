@@ -61,10 +61,9 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
   const [recommendError, setRecommendError] = useState('');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [toast, setToast] = useState('');
-  const [contactUiState, setContactUiState] = useState<'open' | 'collapsed'>('open');
+  const [contactDismissed, setContactDismissed] = useState(false);
   const [contactVisible, setContactVisible] = useState(false);
   const [contactMounted, setContactMounted] = useState(false);
-  const [contactAnimating, setContactAnimating] = useState(false);
   const { view, containerRef, handlePointerDown } = useZoomPan();
   const personality = useMemo(() => getPersonality(nodes.map((node) => node.label)), [nodes]);
   const activeNode = useMemo(() => nodes.find((node) => node.id === selectedNodeId) ?? null, [nodes, selectedNodeId]);
@@ -140,43 +139,25 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
   }, [toast]);
 
   useEffect(() => {
-    const stored = typeof window !== 'undefined' ? window.localStorage.getItem('horizon_contact_ui') : null;
-    if (stored === 'collapsed') {
-      setContactUiState('collapsed');
-      setContactMounted(true);
-      return undefined;
+    const stored = typeof window !== 'undefined' ? window.localStorage.getItem('horizonContactDismissed') : null;
+    if (stored === 'true') {
+      setContactDismissed(true);
+      return;
     }
-    setContactUiState('open');
     setContactMounted(true);
     const timer = setTimeout(() => setContactVisible(true), 180);
     return () => clearTimeout(timer);
   }, []);
 
   const handleCloseContactCard = () => {
-    setContactAnimating(true);
     setContactVisible(false);
+    setContactDismissed(true);
     try {
-      window.localStorage.setItem('horizon_contact_ui', 'collapsed');
+      window.localStorage.setItem('horizonContactDismissed', 'true');
     } catch {
       // ignore
     }
-    setTimeout(() => {
-      setContactUiState('collapsed');
-      setContactAnimating(false);
-    }, 240);
-  };
-
-  const handleOpenContactCard = () => {
-    setContactAnimating(true);
-    setContactUiState('open');
-    setContactMounted(true);
-    setContactVisible(true);
-    try {
-      window.localStorage.setItem('horizon_contact_ui', 'open');
-    } catch {
-      // ignore
-    }
-    setTimeout(() => setContactAnimating(false), 240);
+    setTimeout(() => setContactMounted(false), 260);
   };
 
   const handleMoveNode = (id: string, position: { x: number; y: number }) => {
@@ -242,26 +223,9 @@ const InnerUniverse: React.FC<UniverseScreenProps> = ({ onBack }) => {
         </div>
       </div>
 
-      {contactMounted && contactUiState === 'open' ? (
+      {contactMounted && !contactDismissed ? (
         <div className="fixed bottom-4 left-4 z-40 max-w-full pr-4 sm:bottom-6 sm:left-6 sm:pr-0" data-ui-layer="true">
           <ContactCard visible={contactVisible} onClose={handleCloseContactCard} />
-        </div>
-      ) : null}
-
-      {contactUiState === 'collapsed' ? (
-        <div className="fixed bottom-4 left-4 z-30 pr-4 sm:bottom-6 sm:left-6 sm:pr-0" data-ui-layer="true">
-          <button
-            type="button"
-            aria-label="Открыть чат в Telegram"
-            onClick={contactAnimating ? undefined : handleOpenContactCard}
-            className={`group flex h-12 w-12 items-center justify-center rounded-full border border-[var(--panel-border)] bg-[var(--panel-bg)] text-[var(--text-primary)] shadow-[0_18px_45px_rgba(0,0,0,0.35)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:scale-[1.05] hover:bg-[var(--hover-color)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
-              contactAnimating ? 'pointer-events-none opacity-0' : 'opacity-100'
-            }`}
-          >
-            <span className="text-xl" aria-hidden>
-              💬
-            </span>
-          </button>
         </div>
       ) : null}
     </div>
