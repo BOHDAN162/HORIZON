@@ -33,6 +33,19 @@ export const WorldCanvas: React.FC<Props> = ({
   const draggingNode = useRef<string | null>(null);
   const [dimensions, setDimensions] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
 
+  const setVelocityDecay = (ref: unknown, value: number) => {
+    const r = ref as { d3VelocityDecay?: (v: number) => void; d3AlphaDecay?: (v: number) => void } | null;
+    if (!r) return;
+    if (typeof r.d3VelocityDecay === 'function') {
+      r.d3VelocityDecay(value);
+      return;
+    }
+    if (typeof r.d3AlphaDecay === 'function') {
+      const adjusted = Math.min(0.05, Math.max(0.001, value / 10));
+      r.d3AlphaDecay(adjusted);
+    }
+  };
+
   const graphData = useMemo(() => {
     const mappedNodes: GraphNode[] = nodes.map((node) => ({
       ...node,
@@ -138,7 +151,7 @@ export const WorldCanvas: React.FC<Props> = ({
         }}
         onEngineTick={() => {
           if (!graphRef.current) return;
-          graphRef.current.d3VelocityDecay(0.35);
+          setVelocityDecay(graphRef.current, 0.35);
           graphRef.current.d3Force('link')?.distance?.(120);
         }}
         backgroundColor="transparent"
